@@ -10,15 +10,11 @@ from mt5_actions.authorize import login
 from mt5_actions.tick import get_curr_ticks
 from mt5_actions.rates import get_curr_rates
 from mt5_actions.order import buy_order, sell_order, check_order
-from mt5_global.settings import symbol, timeframe,time_series
+from mt5_global.settings import symbol, timeframe,time_series,Debug
 from models.model import scaler
 
 
 saved_model = None
-
-saved_model = keras.models.load_model("C:\mt5_Bots\mt5_EA_v3\models\saved_models\EURUSD-run_2022_11_05-13_51_58")
-
-
 
 def trade():
     if not login():
@@ -27,6 +23,7 @@ def trade():
     rates = get_curr_rates(symbol,timeframe, time_series)
     while True:
         try:
+            
             curr_rate =get_curr_rates(symbol,timeframe, time_series)
             curr_rate_frame = pd.DataFrame(curr_rate)
             curr_rate_frame_last = curr_rate_frame.tail(1)
@@ -43,6 +40,7 @@ def trade():
             x_scaled = scaler.transform(previous_rates_frame)
             x = pd.DataFrame(x_scaled, columns=['open','high','low','tick_volume','spread','real_volume'])
             #predict
+            x = x.to_numpy().reshape(x.shape[0],x.shape[1],1)
             prediction = model.predict(x)
             prediction = round(prediction[0][0],5)
             #get current price
