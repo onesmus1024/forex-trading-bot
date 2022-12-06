@@ -41,9 +41,8 @@ def check_order():
 def buy_order(prediction,symbol):
     global order_send_count
     price = mt5.symbol_info_tick(symbol).ask
-    
-    tp=price+(prediction-price)
-    sl =price-(prediction-price)
+    tp=mt5.symbol_info_tick(symbol).ask+(prediction-mt5.symbol_info_tick(symbol).ask)
+    sl =mt5.symbol_info_tick(symbol).ask-(prediction-mt5.symbol_info_tick(symbol).ask)
     symbol_info = mt5.symbol_info(symbol)
         
     if symbol_info is None:
@@ -61,7 +60,7 @@ def buy_order(prediction,symbol):
         
     # define request parameters
     request["type"] = mt5.ORDER_TYPE_BUY
-    request["price"] = price
+    request["price"] = mt5.symbol_info_tick(symbol).ask
     request["sl"] = sl
     request["tp"] = tp
 
@@ -98,8 +97,8 @@ def buy_order(prediction,symbol):
 def sell_order(prediction,symbol):
     global order_send_count
     price = mt5.symbol_info_tick(symbol).bid
-    tp=price-(price-prediction)
-    sl =price+(price-prediction)
+    tp=mt5.symbol_info_tick(symbol).bid-(mt5.symbol_info_tick(symbol).bid-prediction)
+    sl =mt5.symbol_info_tick(symbol).bid+(mt5.symbol_info_tick(symbol).bid-prediction)
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
         print(symbol, "not found, can not call order_check()")
@@ -113,7 +112,7 @@ def sell_order(prediction,symbol):
         
     # define request parameters
     request["type"] = mt5.ORDER_TYPE_SELL
-    request["price"] = price
+    request["price"] = mt5.symbol_info_tick(symbol).bid
     request["sl"] = sl
     request["tp"] = tp
 

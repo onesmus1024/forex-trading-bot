@@ -1,9 +1,6 @@
 import numpy as np
 import pandas as pd
-from tensorflow import keras
-import datetime
 import time
-import pytz
 import MetaTrader5 as mt5
 from models.model import model
 from mt5_actions.authorize import login
@@ -34,19 +31,35 @@ def trade():
                 continue
 
             #drop time column
-            previous_rates_frame=previous_rates_frame.drop(['time','close'], axis=1)
-        
+            previous_rates_frame=previous_rates_frame.drop(['real_volume'], axis=1)
+            previous_rates_frame['momentum'] = previous_rates_frame['open'] - previous_rates_frame['close']
+            previous_rates_frame['average'] = (previous_rates_frame['high'] + previous_rates_frame['low'])/2
+            previous_rates_frame['range'] = previous_rates_frame['high'] - previous_rates_frame['low']
+            previous_rates_frame['ohlc'] = (previous_rates_frame['open'] + previous_rates_frame['high'] + previous_rates_frame['low'] + previous_rates_frame['close'])/4
+
+            #drop time column
+            previous_rates_frame['time'] = pd.to_datetime(previous_rates_frame['time'], unit='s')
+            previous_rates_frame = previous_rates_frame.set_index('time')
+
+
             #scale data
-            x_scaled = scaler.transform(previous_rates_frame)
-            x = pd.DataFrame(x_scaled, columns=['open','high','low','tick_volume','spread','real_volume'])
+            x = scaler.transform(previous_rates_frame)
+            x = x.reshape(1,time_series,10)
             #predict
-            x = x.to_numpy().reshape(x.shape[0],x.shape[1],1)
             prediction = model.predict(x)
-            prediction = round(prediction[0][0],5)
+            #scale back
+            prediction = scaler.inverse_transform(prediction)
+            
+            prediction = np.round(prediction[-1][0],5)
             #get current price
-            curr_price = mt5.symbol_info_tick(symbol).ask
+            curr_price = curr_rate_frame_last['open'].values[0]
+            print("#"*50)
+            print('prediction: ',prediction)
+            print('current price: ',curr_price)
+            
+
             order_dic = check_order()
-            if prediction > curr_price:
+            if prediction > mt5.symbol_info_tick(symbol).ask and prediction> mt5.symbol_info_tick(symbol).bid:
                 if order_dic['buy']:
                     print('buy order already exists')
                     rates = get_curr_rates(symbol,timeframe, time_series)

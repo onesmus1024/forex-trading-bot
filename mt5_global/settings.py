@@ -2,11 +2,11 @@ import MetaTrader5 as mt5
 import datetime
 import pytz
 symbol = "EURUSD"
-timeframe = mt5.TIMEFRAME_M1
+timeframe = mt5.TIMEFRAME_M10
 
 Model_type = "v3_LSTM"
-time_series = 15
-Debug = False
+time_series = 10
+Debug = True
 
 timezone = pytz.utc
-utc_from = datetime.datetime(2022, 10, 1, tzinfo=timezone)
+utc_from = datetime.datetime(2022, 1,1, tzinfo=timezone)
