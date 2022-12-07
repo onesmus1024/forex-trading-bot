@@ -40,15 +40,16 @@ def trade():
             #drop time column
             previous_rates_frame['time'] = pd.to_datetime(previous_rates_frame['time'], unit='s')
             previous_rates_frame = previous_rates_frame.set_index('time')
-
-
-            #scale data
             x = scaler.transform(previous_rates_frame)
-            x = x.reshape(1,time_series,10)
+            x = np.reshape(x, (1, time_series, 10))
+       
             #predict
-            prediction = model.predict(x)
-            #scale back
-            prediction = scaler.inverse_transform(prediction)
+            prediction = model.predict(x) #scale back
+
+            prediction_copies = np.repeat(prediction, 10, axis=-1)
+            prediction = scaler.inverse_transform(prediction_copies)
+
+            print("prediction: ",prediction)
             
             prediction = np.round(prediction[-1][0],5)
             #get current price
