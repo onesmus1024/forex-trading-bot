@@ -111,8 +111,8 @@ def build_model(x_train,y_train):
    # keras.layers.Conv1D(filters=20, kernel_size=4, strides=2, padding="valid",
     #input_shape=[settings.time_series, 10]),
     keras.layers.GRU(20,return_sequences=True,input_shape=[x_train.shape[1],x_train.shape[2]]),
-    keras.layers.LSTM(256),
-    keras.layers.Dense(64),
+    keras.layers.LSTM(256,activation='relu'),
+    keras.layers.Dense(64,activation='relu'),
     keras.layers.Dense(1)
     ])
     model.summary()

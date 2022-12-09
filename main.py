@@ -6,7 +6,7 @@ from models.model import model
 from mt5_actions.authorize import login
 from mt5_actions.tick import get_curr_ticks
 from mt5_actions.rates import get_curr_rates
-from mt5_actions.order import buy_order, sell_order, check_order
+from mt5_actions.order import buy_order, sell_order, check_order, close_position
 from mt5_global.settings import symbol, timeframe,time_series,Debug
 from models.model import scaler
 
@@ -65,12 +65,18 @@ def trade():
                     print('buy order already exists')
                     rates = get_curr_rates(symbol,timeframe, time_series)
                     continue
+                elif order_dic['sell']:
+                    #close_position(order_dic['ticket'],order_dic['type'])
+                    pass
                 buy_order(prediction,symbol)
             elif prediction < curr_price:
                 if order_dic['sell']:
                     print('sell order already exists')
                     rates = get_curr_rates(symbol,timeframe, time_series)
                     continue
+                elif order_dic['buy']:
+                    #close_position(order_dic['ticket'],order_dic['type'])
+                    pass
                 sell_order(prediction,symbol)
             else:
                 print('no action')
