@@ -1,4 +1,5 @@
 import MetaTrader5 as mt5
+import ta
 import tensorflow as tf
 from tensorflow import keras
 from sklearn.model_selection import train_test_split
@@ -12,7 +13,6 @@ import datetime
 from mt5_global import settings
 import time
 import os
-from keras.preprocessing.sequence import TimeseriesGenerator
 
 
 from mt5_actions.rates import get_rates
@@ -27,7 +27,6 @@ history = None
 scaler = None
 x_train = []
 y_train = []
-n_future = 3
 
 #get rates from mt5
 rates = get_rates(symbol,timeframe, utc_from, utc_to)
@@ -44,7 +43,6 @@ rates_frame['range'] = rates_frame['high'] - rates_frame['low']
 rates_frame['ohlc'] = (rates_frame['open'] + rates_frame['high'] + rates_frame['low'] + rates_frame['close'])/4
 
 
-
 #set freq
 #rates_frame.index = pd.DatetimeIndex(rates_frame.index).to_period('H')
 #rates_frame.index.freq = 'H'
@@ -54,8 +52,6 @@ def data_stats(rates_frame):
     print(rates_frame.info())
     print(rates_frame.corr())
     corretion_matrix =rates_frame.corr()
-    #time     open     high      low    close  tick_volume  spread  real_volume
-    #scatter_matrix(rates_frame[attributes],figsize=(12,8))
     print(corretion_matrix['close'].sort_values(ascending=False))
    
 def model_stats(model):
@@ -73,15 +69,7 @@ def data_visualization(rates_frame):
     rates_frame['low'].plot()
     plt.legend()
     plt.show()
-    #plot data
-    rates_frame.plot(subplots=True)
-    plt.show()
-    #plot histogram
-    rates_frame.hist()
-    plt.show()
-    #plot scatter matrix
-    scatter_matrix(rates_frame)
-    plt.show()
+    
 
 def data_preparation(rates_frame):
     global scaler
@@ -89,17 +77,26 @@ def data_preparation(rates_frame):
     scaled_data = scaler.fit(rates_frame)
     scaled_data = scaler.transform(rates_frame)
     #replace scaled close with original close
- 
+    #print close column
+    print("#@@"*50)
+    #print close column
+    print(scaled_data[:,3][:20])
+    print(scaled_data.shape)
     return scaled_data
 
 def time_series_generator(scaled_data):
     global x_train
     global y_train
-    for i in  range(settings.time_series,len(scaled_data)-n_future+1):
-        x_train.append(scaled_data[i-settings.time_series:i,0:scaled_data.shape[1]])
-        y_train.append(scaled_data[i+n_future-1:i+n_future,0])
+    #generate time series where y is the next value of x in 3 column of scaled_data
+    for i in range(time_series,scaled_data.shape[0],time_series):
+        x_train.append(scaled_data[i-time_series:i-1,:])
+        y_train.append(scaled_data[:,3][i])
 
     x_train,y_train = np.array(x_train),np.array(y_train)
+    #print y_train
+    print("!!@@"*50)
+    print(y_train[:10])
+    time.sleep(120)
     return x_train,y_train
 
 

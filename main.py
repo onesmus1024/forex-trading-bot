@@ -1,17 +1,32 @@
 import numpy as np
 import pandas as pd
 import time
+import datetime
 import MetaTrader5 as mt5
 from models.model import model
 from mt5_actions.authorize import login
 from mt5_actions.tick import get_curr_ticks
 from mt5_actions.rates import get_curr_rates
 from mt5_actions.order import buy_order, sell_order, check_order, close_position
-from mt5_global.settings import symbol, timeframe,time_series,Debug
+from mt5_global.settings import symbol, timeframe,time_series,Debug,timezone
 from models.model import scaler
 
 
 saved_model = None
+def trade_time():
+    print("executing")
+    #sleep on weekends and sleep fro two
+    if  datetime.datetime.now().hour == 23 and datetime.datetime.now().minute > 55 and datetime.datetime.now().strftime("%A") == "Friday":
+        print('sleeping for two days')
+        time.sleep(172800)
+       #trade week days from 8am to 5pm
+    elif datetime.datetime.now().weekday in [1,2,3,4,5] and datetime.datetime.now().hour in range(8,17):
+        trade()
+    else:
+        #sleep for 1 hour
+        print('sleeping for one hour')
+        time.sleep(3600)
+        
 
 def trade():
     if not login():
@@ -91,7 +106,7 @@ def trade():
 
 
 if __name__ == "__main__":
-    trade()
+    trade_time()
    
        
 
