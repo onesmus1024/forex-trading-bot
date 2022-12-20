@@ -45,24 +45,25 @@ def check_order():
         return dic_order
     print(positions)
     return dic_order
-def close_position(ticket,type):
+def close_position(position):
+    tick = mt5.symbol_info_tick(position.symbol)
+
     request = {
-        "action":mt5.TRADE_ACTION_CLOSE_BY,
-        "symbol":symbol,
-        "volume":lot,
-        "type":type,
-        "position":ticket,
-        "deviation":deviation,
-        "magic":234000,
-        "comment":Model_type,
-        "type_time":mt5.ORDER_TIME_GTC,
-        "type_filling":mt5.ORDER_FILLING_FOK,
+        "action": mt5.TRADE_ACTION_DEAL,
+        "position": position.ticket,
+        "symbol": position.symbol,
+        "volume": position.volume,
+        "type": mt5.ORDER_TYPE_BUY if position.type == 1 else mt5.ORDER_TYPE_SELL,
+        "price": tick.ask if position.type == 1 else tick.bid,  
+        "deviation": 20,
+        "magic": 234000,
+        "comment": Model_type,
+        "type_time": mt5.ORDER_TIME_GTC,
+        "type_filling": mt5.ORDER_FILLING_IOC,
     }
 
-    # close the order by the ticket
-    if ticket == 0:
-        print("No ticket to close")
-        return False
+
+    # send a trading request
     result = mt5.order_send(request)
     if result.retcode != mt5.TRADE_RETCODE_DONE:
         print("order_close failed, retcode={}".format(result.retcode))

@@ -5,9 +5,9 @@ symbol = "EURUSD"
 timeframe = mt5.TIMEFRAME_M10
 
 Model_type = "v3_LSTM"
-time_series = 5
+time_series = 2
 n_future = 1
-Debug = True
-
+Debug = False
+Trade_with_signals = True
 timezone = pytz.utc
 utc_from = datetime.datetime(2022, 1,1, tzinfo=timezone)

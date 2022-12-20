@@ -1,9 +1,9 @@
 import MetaTrader5 as mt5
-
-account =30351583
-password = "/7W4fFEA/mq4BBV"
-server = "Deriv-Demo"
-path = "C:\\Program Files\\Deriv\\terminal64.exe"
+from mt5_global.config import access_config as config
+account = config.account
+password = config.password
+server = config.server
+path = config.path
 
 
 
