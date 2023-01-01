@@ -1,0 +1,7 @@
+12/30/2022 06:45:01 PM 'NoneType' object is not subscriptable
+Traceback (most recent call last):
+  File "c:\mt5_bots\mt5_EA_v3\main.py", line 142, in trade_with_signal
+    f.write('\n')
+  File "c:\mt5_bots\mt5_EA_v3\technical_analysis\signal.py", line 61, in check_signal_type
+    if signal['buy'] == 1:
+TypeError: 'NoneType' object is not subscriptable

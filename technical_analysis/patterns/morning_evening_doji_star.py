@@ -1,19 +1,24 @@
 import talib as ta
+from mt5_global import settings
 class MorningEveningDoji:
-    def check_morning_evening_doji(self,df)->dict:
+    def __init__(self):
+        self.morning_doji_star = 0
+        self.evening_doji_star = 0
+    def check_moring_evining_doji(self, df) -> dict:
         """
-        Morning and Evening Doji Star Pattern
+        Morning and Evening Star Pattern
         :param df: pandas.DataFrame
         :return: dict
         """
-        # Check if the candle is a morning doji star pattern
-        # If the candle is a morning doji star pattern, return dict {'buy': 1, 'sell': 0}
-        # Else return dict {'buy': 0, 'sell': 0}
-        # Check if the candle is a morning doji star pattern
-        if ta.CDLMORNINGDOJISTAR(df['open'], df['high'], df['low'], df['close']) == 100:
-            return {'buy': 1, 'sell': 0,'pattern':'morning doji star'}
-        # Check if the candle is a evening doji star pattern
-        elif ta.CDLEVENINGDOJISTAR(df['open'], df['high'], df['low'], df['close']) == -100:
-            return {'buy': 0, 'sell': 1,'pattern':'evening doji star'}
+        self.morning_doji_star = ta.CDLMORNINGDOJISTAR(df['open'], df['high'], df['low'], df['close'], penetration=0)
+        self.evening_doji_star = ta.CDLEVENINGDOJISTAR(df['open'], df['high'], df['low'], df['close'], penetration=0)
+        self.morning_doji_star = list(self.morning_doji_star)
+        self.evening_doji_star = list(self.evening_doji_star)
+        if self.morning_doji_star[-1] == 100:
+            settings.sl =df['low'].loc[14-3:14].min()
+            return {'buy': 1, 'sell':0,'pattern':'morning_doji_star','sl':settings.sl}
+        elif self.evening_doji_star[-1] == 100:
+            settings.sl = df['high'].loc[14-3:14].max()
+            return {'buy': 0, 'sell':1,'pattern':'evening_doji_star','sl':settings.sl}
         else:
-            return {'buy': 0, 'sell': 0,'pattern':"morning or evening doji star not found"}
+            return {'buy': 0, 'sell':0,'pattern':'morning or evening doji star not found','sl':0}
