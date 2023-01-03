@@ -1,9 +1,11 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class CounterAttack:
     def __init__(self):
         self.counter_attack = 0
     def check_counter_attack(self, df)->dict:
+        df = pd.DataFrame(df)
         # Counter Attack Pattern using talib
         self.counter_attack = ta.CDLCOUNTERATTACK(df['open'], df['high'], df['low'], df['close'])
         self.counter_attack = list(self.counter_attack)

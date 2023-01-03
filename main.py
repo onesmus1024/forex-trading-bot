@@ -120,7 +120,7 @@ def trade_with_signal():
     print('.... waiting for signal ....')
     while True:
         try:
-            
+            #check for spread if spread is greater than 5 pips do not trade
             
             curr_rate =get_curr_rates(symbol,timeframe, time_series)
             curr_rate_frame = pd.DataFrame(curr_rate)
@@ -130,25 +130,29 @@ def trade_with_signal():
             if int(curr_rate_frame_last['time'])== int(previous_rates_frame_last['time']):
                 time.sleep(2)
                 continue
-            signal = Signal()
-            signal.get_signal()
-            
-            #log signal to signal.log
-            with open('C:\mt5_bots\mt5_EA_v3\logs_dir\signal.log','a') as f:
-                f.write(str(datetime.datetime.now(timezone)))
-                f.write(str(Signal().get_signal()))
-                #add new line
-                f.write('\n')
-            if signal.check_signal_type() == 'buy':
-                price = mt5.symbol_info_tick(symbol).ask+0.00100
-                buy_order(price,symbol)
-            elif signal.check_signal_type() == 'sell':
-                price = mt5.symbol_info_tick(symbol).bid-0.00100
-                sell_order(price,symbol)
+            if mt5.symbol_info_tick(symbol).ask - mt5.symbol_info_tick(symbol).bid < 20:
+                signal = Signal()
+                signal.get_signal()
+                
+                #log signal to signal.log
+                with open('C:\mt5_bots\mt5_EA_v3\logs_dir\signal.log','a') as f:
+                    f.write(str(datetime.datetime.now(timezone)))
+                    f.write(str(Signal().get_signal()))
+                    #add new line
+                    f.write('\n')
+                if signal.check_signal_type() == 'buy':
+                    price = mt5.symbol_info_tick(symbol).ask+0.00100
+                    buy_order(price,symbol)
+                elif signal.check_signal_type() == 'sell':
+                    price = mt5.symbol_info_tick(symbol).bid-0.00100
+                    sell_order(price,symbol)
+                else:
+                    print('no signal')
+                rates = get_curr_rates(symbol,timeframe, time_series)
+                print('.... waiting for another signal ....')
             else:
-                print('no signal')
-            rates = get_curr_rates(symbol,timeframe, time_series)
-            print('.... waiting for another signal ....')
+                print('spread is greater than 5 pips')
+                continue
         except Exception as e:
             #log the error to error.log file using python logging module
             logging.basicConfig(filename='C:\mt5_bots\mt5_EA_v3\logs_dir\error.log',level=logging.ERROR,format='%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p',)

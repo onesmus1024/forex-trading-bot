@@ -1,9 +1,12 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
+
 class UpsideGap2Crows:
     def __init__(self):
         self.upside_gap_2_crows = 0
     def check_upside_gap_2_crows(self, df)->dict:
+        df = pd.DataFrame(df)
         self.upside_gap_2_crows = ta.CDLXSIDEGAP3METHODS(df['open'], df['high'], df['low'], df['close'])
         self.upside_gap_2_crows = list(self.upside_gap_2_crows)
         if self.upside_gap_2_crows[-1] == 100:

@@ -31,6 +31,10 @@ def data_gen():
     df['stalled_pattern'] = ta.CDLSTALLEDPATTERN(df['open'], df['high'], df['low'], df['close'])
     df['unique_three_river'] = ta.CDLUNIQUE3RIVER(df['open'], df['high'], df['low'], df['close'])
     df['upside_gap_two_crows'] = ta.CDLUPSIDEGAP2CROWS(df['open'], df['high'], df['low'], df['close'])
+    df['tasuki_gap'] = ta.CDLTASUKIGAP(df['open'], df['high'], df['low'], df['close'])
+    df['separating_lines'] = ta.CDLSEPARATINGLINES(df['open'], df['high'], df['low'], df['close'])
+    df['rising_falling_three_methods'] = ta.CDLRISEFALL3METHODS(df['open'], df['high'], df['low'], df['close'])
+    df['time'] = pd.to_datetime(df['time'], unit='s')
     df.to_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
 
 

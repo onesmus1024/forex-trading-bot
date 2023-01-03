@@ -1,4 +1,5 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class MorningEveningDoji:
     def __init__(self):
@@ -10,6 +11,7 @@ class MorningEveningDoji:
         :param df: pandas.DataFrame
         :return: dict
         """
+        df = pd.DataFrame(df)
         self.morning_doji_star = ta.CDLMORNINGDOJISTAR(df['open'], df['high'], df['low'], df['close'], penetration=0)
         self.evening_doji_star = ta.CDLEVENINGDOJISTAR(df['open'], df['high'], df['low'], df['close'], penetration=0)
         self.morning_doji_star = list(self.morning_doji_star)
@@ -17,7 +19,7 @@ class MorningEveningDoji:
         if self.morning_doji_star[-1] == 100:
             settings.sl =df['low'].loc[14-3:14].min()
             return {'buy': 1, 'sell':0,'pattern':'morning_doji_star','sl':settings.sl}
-        elif self.evening_doji_star[-1] == 100:
+        elif self.evening_doji_star[-1] == -100:
             settings.sl = df['high'].loc[14-3:14].max()
             return {'buy': 0, 'sell':1,'pattern':'evening_doji_star','sl':settings.sl}
         else:

@@ -1,4 +1,5 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 
 class HammerHangingMan:
@@ -11,6 +12,7 @@ class HammerHangingMan:
         :param df: pandas.DataFrame
         :return: dict
         """
+        df = pd.DataFrame(df)
         self.hammer = ta.CDLHAMMER(df['open'], df['high'], df['low'], df['close'])
         self.hanging_man = ta.CDLHANGINGMAN(df['open'], df['high'], df['low'], df['close'])
         self.hammer = list(self.hammer)
@@ -18,7 +20,7 @@ class HammerHangingMan:
         if self.hammer[-1] == 100:
             settings.sl =df['low'].loc[14-3:14].min()
             return {'buy': 1, 'sell':0,'pattern':'hammer','sl':settings.sl}
-        elif self.hanging_man[-1] == 100:
+        elif self.hanging_man[-1] == -100:
             settings.sl = df['high'].loc[14-3:14].max()
             return {'buy': 0, 'sell':1,'pattern':'hanging man ','sl':settings.sl}
         else:

@@ -1,9 +1,11 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class Doji:
     def __init__(self):
         self.doji = 0
     def check_doji(self, df)->dict:
+        df = pd.DataFrame(df)
         # Doji Pattern using talib
         self.doji = ta.CDLDOJI(df['open'], df['high'], df['low'], df['close'])
         self.doji = list(self.doji)

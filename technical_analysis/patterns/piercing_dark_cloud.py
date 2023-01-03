@@ -1,4 +1,5 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class PiercingDarkCloud:
     def __init__(self):
@@ -10,6 +11,7 @@ class PiercingDarkCloud:
         :param df: pandas.DataFrame
         :return: dict
         """
+        df = pd.DataFrame(df)
         self.piercing = ta.CDLPIERCING(df['open'], df['high'], df['low'], df['close'])
         self.dark_cloud = ta.CDLDARKCLOUDCOVER(df['open'], df['high'], df['low'], df['close'], penetration=0)
         self.piercing = list(self.piercing)
@@ -17,7 +19,7 @@ class PiercingDarkCloud:
         if self.piercing[-1] == 100:
             settings.sl =df['low'].loc[14-3:14].min()
             return {'buy': 1, 'sell':0,'pattern':'piercing','sl':settings.sl}
-        elif self.dark_cloud[-1] == 100:
+        elif self.dark_cloud[-1] == -100:
             settings.sl = df['high'].loc[14-3:14].max()
             return {'buy': 0, 'sell':1,'pattern':'dark_cloud','sl':settings.sl}
         else:

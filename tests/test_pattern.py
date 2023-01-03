@@ -15,6 +15,9 @@ from technical_analysis.patterns.harami import Harami
 from technical_analysis.patterns.threeblackcrows_threeadvancingsolders import ThreeBlackCrowsThreeAdvancingSolders
 from technical_analysis.patterns.unique3river import Unique3River
 from technical_analysis.patterns.upsidegap2crows import UpsideGap2Crows
+from technical_analysis.patterns.tasukigap import TasukiGap
+from technical_analysis.patterns.separating_line import SeparatingLine
+from technical_analysis.patterns.rising_falling_three_methods import RisingFallingThreeMethods
 pattern_not_found=0
 class TestPattern(
     unittest.TestCase,
@@ -30,7 +33,10 @@ class TestPattern(
     Harami,
     ThreeBlackCrowsThreeAdvancingSolders,
     Unique3River,
-    UpsideGap2Crows
+    UpsideGap2Crows,
+    TasukiGap,
+    SeparatingLine,
+    RisingFallingThreeMethods
     ):
 
     def test_morning_star(self):
@@ -55,7 +61,7 @@ class TestPattern(
         
         evening_star_index = 0
         for i in range(len(df)):
-            if df['evening_star'][i] == 100 and i>settings.period:
+            if df['evening_star'][i] == -100 and i>settings.period:
                 evening_star_index = i
                 break
         if evening_star_index == 0:
@@ -67,7 +73,7 @@ class TestPattern(
             df = df[evening_star_index+1-settings.period:evening_star_index+1]
             self.check_morning_evening_star(df)
             self.assertEqual(self.morning_star[-1], 0)
-            self.assertEqual(self.evening_star[-1], 100)
+            self.assertEqual(self.evening_star[-1], -100)
     def test_morning_doji_star(self):
         df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
         
@@ -91,7 +97,7 @@ class TestPattern(
         
         evening_doji_star_index = 0
         for i in range(len(df)):
-            if df['evening_doji_star'][i] == 100 and i>settings.period:
+            if df['evening_doji_star'][i] == -100 and i>settings.period:
                 evening_doji_star_index = i
                 break
         if evening_doji_star_index == 0:
@@ -103,7 +109,7 @@ class TestPattern(
             df = df[evening_doji_star_index+1-settings.period:evening_doji_star_index+1]
             self.check_moring_evining_doji(df)
             self.assertEqual(self.morning_doji_star[-1], 0)
-            self.assertEqual(self.evening_doji_star[-1], 100)
+            self.assertEqual(self.evening_doji_star[-1], -100)
     def test_piercing(self):
         df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
         
@@ -127,7 +133,7 @@ class TestPattern(
         
         dark_cloud_index = 0
         for i in range(len(df)):
-            if df['dark_cloud'][i] == 100 and i>settings.period:
+            if df['dark_cloud'][i] == -100 and i>settings.period:
                 dark_cloud_index = i
                 break
         if dark_cloud_index == 0:
@@ -139,13 +145,13 @@ class TestPattern(
             df = df[dark_cloud_index+1-settings.period:dark_cloud_index+1]
             self.check_piercing_dark_cloud(df)
             self.assertEqual(self.piercing[-1], 0)
-            self.assertEqual(self.dark_cloud[-1], 100)
+            self.assertEqual(self.dark_cloud[-1], -100)
     def test_shooting_star(self):
         df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
         
         shooting_star_index = 0
         for i in range(len(df)):
-            if df['shooting_star'][i] == 100 and i>settings.period:
+            if df['shooting_star'][i] == -100 and i>settings.period:
                 shooting_star_index = i
                 break
         if shooting_star_index == 0:
@@ -156,7 +162,7 @@ class TestPattern(
         else:
             df = df[shooting_star_index+1-settings.period:shooting_star_index+1]
             self.check_shooting_start_inverted_hammer(df)
-            self.assertEqual(self.shooting_star[-1], 100)
+            self.assertEqual(self.shooting_star[-1], -100)
             self.assertEqual(self.inverted_hammer[-1], 0)
     def test_inverted_hammer(self):
         df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
@@ -198,7 +204,7 @@ class TestPattern(
         df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
         hanging_man_index = 0
         for i in range(len(df)):
-            if df['hanging_man'][i] == 100 and i>settings.period:
+            if df['hanging_man'][i] == -100 and i>settings.period:
                 hanging_man_index = i
                 break
         if hanging_man_index == 0:
@@ -210,7 +216,7 @@ class TestPattern(
             df = df[hanging_man_index+1-settings.period:hanging_man_index+1]
             self.check_hammer_hanging_man(df)
             self.assertEqual(self.hammer[-1], 0)
-            self.assertEqual(self.hanging_man[-1], 100)
+            self.assertEqual(self.hanging_man[-1], -100)
     def test_belthold_buy(self):
         df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
         belthold_index = 0
@@ -563,4 +569,101 @@ class TestPattern(
             df = df[upside_gap_two_crows_index+1-settings.period:upside_gap_two_crows_index+1]
             self.check_upside_gap_2_crows(df)
             self.assertEqual(self.upside_gap_two_crows[-1], -100)
-        print('pattern_not_found', pattern_not_found)
+        
+    def test_tasuki_gap_buy(self):
+        df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
+        tasuki_gap_index = 0
+        for i in range(len(df)):
+            if df['tasuki_gap'][i] == 100 and i>settings.period:
+                tasuki_gap_index = i
+                break
+        if tasuki_gap_index == 0:
+            print('tasuki_gap buy not found')
+            global pattern_not_found
+            pattern_not_found += 1
+            self.assertEqual(tasuki_gap_index, 0)
+        else:
+            df = df[tasuki_gap_index+1-settings.period:tasuki_gap_index+1]
+            self.check_tasuki_gap(df)
+            self.assertEqual(self.tasuki_gap[-1], 100)
+    def test_tasuki_gap_sell(self):
+        df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
+        tasuki_gap_index = 0
+        for i in range(len(df)):
+            if df['tasuki_gap'][i] == -100 and i>settings.period:
+                tasuki_gap_index = i
+                break
+        if tasuki_gap_index == 0:
+            print('tasuki_gap sell not found')
+            global pattern_not_found
+            pattern_not_found += 1
+            self.assertEqual(tasuki_gap_index, 0)
+        else:
+            df = df[tasuki_gap_index+1-settings.period:tasuki_gap_index+1]
+            self.check_tasuki_gap(df)
+            self.assertEqual(self.tasuki_gap[-1], -100)
+    def test_separating_lines_buy(self):
+        df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
+        separating_lines_index = 0
+        for i in range(len(df)):
+            if df['separating_lines'][i] == 100 and i>settings.period:
+                separating_lines_index = i
+                break
+        if separating_lines_index == 0:
+            print('separating_lines buy not found')
+            global pattern_not_found
+            pattern_not_found += 1
+            self.assertEqual(separating_lines_index, 0)
+        else:
+            df = df[separating_lines_index+1-settings.period:separating_lines_index+1]
+            self.check_separating_line(df)
+            self.assertEqual(self.separating_line[-1], 100)
+    def test_separating_lines_sell(self):
+        df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
+        separating_lines_index = 0
+        for i in range(len(df)):
+            if df['separating_lines'][i] == -100 and i>settings.period:
+                separating_lines_index = i
+                break
+        if separating_lines_index == 0:
+            print('separating_lines sell not found')
+            global pattern_not_found
+            pattern_not_found += 1
+            self.assertEqual(separating_lines_index, 0)
+        else:
+            df = df[separating_lines_index+1-settings.period:separating_lines_index+1]
+            self.check_separating_line(df)
+            self.assertEqual(self.separating_line[-1], -100)
+    def rising_three_methods_buy(self):
+        df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
+        rising_three_methods_index = 0
+        for i in range(len(df)):
+            if df['rising_three_methods'][i] == 100 and i>settings.period:
+                rising_three_methods_index = i
+                break
+        if rising_three_methods_index == 0:
+            print('rising_three_methods buy not found')
+            global pattern_not_found
+            pattern_not_found += 1
+            self.assertEqual(rising_three_methods_index, 0)
+        else:
+            df = df[rising_three_methods_index+1-settings.period:rising_three_methods_index+1]
+            self.check_rising_falling_three_methods(df)
+            self.assertEqual(self.rising_three_methods[-1], 100)
+    def rising_three_methods_sell(self):
+        df = pd.read_csv('C:/mt5_bots/mt5_EA_v3/data/data.csv')
+        rising_three_methods_index = 0
+        for i in range(len(df)):
+            if df['rising_three_methods'][i] == -100 and i>settings.period:
+                rising_three_methods_index = i
+                break
+        if rising_three_methods_index == 0:
+            print('rising_three_methods sell not found')
+            global pattern_not_found
+            pattern_not_found += 1
+            self.assertEqual(rising_three_methods_index, 0)
+        else:
+            df = df[rising_three_methods_index+1-settings.period:rising_three_methods_index+1]
+            self.check_rising_falling_three_methods(df)
+            self.assertEqual(self.rising_three_methods[-1], -100)
+

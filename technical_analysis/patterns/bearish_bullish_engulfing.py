@@ -1,11 +1,13 @@
 import time
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class BearishBullishEnglufing:
     def __init__(self):
         self.bullish_engulfing = 0
         self.bearish_engulfing = 0
     def check_bullish_bearish_engulfing(self, df)->dict:
+        df = pd.DataFrame(df)
         # Bullish Engulfing Pattern using talib
         self.bullish_engulfing = ta.CDLENGULFING(df['open'], df['high'], df['low'], df['close'])
         self.bearish_engulfing = ta.CDLENGULFING(df['open'], df['high'], df['low'], df['close'])

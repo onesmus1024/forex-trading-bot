@@ -1,4 +1,5 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class ThreeBlackCrowsThreeAdvancingSolders:
     def __init__(self):
@@ -8,6 +9,7 @@ class ThreeBlackCrowsThreeAdvancingSolders:
         self.stalled_pattern = 0
 
     def check_three_black_crows_three_advancing_solders(self, df)->dict:
+        df = pd.DataFrame(df)
         # Three Black Crows Pattern using talib
         self.three_black_crows = ta.CDL3BLACKCROWS(df['open'], df['high'], df['low'], df['close'])
         self.three_advancing_solders = ta.CDL3WHITESOLDIERS(df['open'], df['high'], df['low'], df['close'])

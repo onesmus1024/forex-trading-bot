@@ -1,9 +1,11 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class Unique3River:
     def __init__(self):
         self.unique_three_river = 0
     def check_unique_three_river(self, df)->dict:
+        df = pd.DataFrame(df)
         self.unique_three_river = ta.CDL3INSIDE(df['open'], df['high'], df['low'], df['close'])
         self.unique_three_river = list(self.unique_three_river)
         if self.unique_three_river[-1] == 100:

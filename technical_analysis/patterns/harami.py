@@ -1,4 +1,5 @@
 import talib as ta
+import pandas as pd
 from mt5_global import settings
 class Harami:
     def __init__(self):
@@ -6,6 +7,7 @@ class Harami:
         self.harami_cross = 0
 
     def check_harami(self, df)->dict:
+        df = pd.DataFrame(df)
         # Harami Pattern using talib
         self.harami = ta.CDLHARAMI(df['open'], df['high'], df['low'], df['close'])
         self.harami_cross = ta.CDLHARAMICROSS(df['open'], df['high'], df['low'], df['close'])
