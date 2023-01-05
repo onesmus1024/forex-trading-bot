@@ -1,9 +1,11 @@
 import MetaTrader5 as mt5
+import math
 import  time
 from mt5_global.settings import symbol,Model_type,sl
 from mt5_global import settings
 
 point = mt5.symbol_info(symbol).point
+tp =0.0
 lot = 0.1
 deviation = 20
 order_send_count = 0
@@ -70,47 +72,35 @@ def close_position(type_to_close):
                 result = mt5.order_send(request)
                 if result.retcode != mt5.TRADE_RETCODE_DONE:
                     print("order_close failed, retcode={}".format(result.retcode))
-                    # request the result as a dictionary and display it element by element
-                    result_dict=result._asdict()
-                    for field in result_dict.keys():
-                        print("   {}={}".format(field,result_dict[field]))
-                        # if this is a trading request structure, display it element by element as well
-                        if field=="request":
-                            traderequest_dict=result_dict[field]._asdict()
-                            for tradereq_filed in traderequest_dict:
-                                print("       traderequest: {}={}".format(tradereq_filed,traderequest_dict[tradereq_filed]))
+                    raise Exception("order_close failed, retcode={}".format(result.retcode))
                 else:
                     print("order_close done, ",result)
-                    return True
     else:
         print("No orders on at all ",symbol)
         return False
 def buy_order(prediction,symbol):
     #close sell position
-    close_position(mt5.ORDER_TYPE_SELL)
-    global order_send_count
+    #close_position(mt5.ORDER_TYPE_SELL)
+    global order_send_count,tp
     price = mt5.symbol_info_tick(symbol).ask
     if not settings.Trade_with_signals:
         tp=mt5.symbol_info_tick(symbol).ask+(prediction-mt5.symbol_info_tick(symbol).ask)
         sl =mt5.symbol_info_tick(symbol).ask-(prediction-mt5.symbol_info_tick(symbol).ask)
     else:
-        tp=0.0
+        tp=mt5.symbol_info_tick(symbol).ask+point*40
         sl = settings.sl
     symbol_info = mt5.symbol_info(symbol)
         
     if symbol_info is None:
-        print(symbol, "not found, can not call order_check()")
-        mt5.shutdown()
-        quit()
+        raise Exception("symbol_info({}}) failed, exit",symbol)
+        return 
     
     # if the symbol is unavailable in MarketWatch, add it
     if not symbol_info.visible:
          print(symbol, "is not visible, trying to switch on")
          if not mt5.symbol_select(symbol,True):
-                print("symbol_select({}}) failed, exit",symbol)
-                mt5.shutdown()
-                quit()
-        
+                raise Exception("symbol_select({}}) failed, exit",symbol)
+                return
     # define request parameters
     request["type"] = mt5.ORDER_TYPE_BUY
     request["price"] = mt5.symbol_info_tick(symbol).ask
@@ -128,18 +118,8 @@ def buy_order(prediction,symbol):
             buy_order(prediction, symbol)
         else:
             order_send_count = 0
-            print("Order Resend Failed",mt5.last_error())
-        print("2. order_send failed, retcode={}".format(result))
-        # request the result as a dictionary and display it element by element
-        result_dict=result._asdict()
-        for field in result_dict.keys():
-            print("   {}={}".format(field,result_dict[field]))
-            # if this is a trading request structure, display it element by element as well
-            if field=="request":
-                traderequest_dict=result_dict[field]._asdict()
-                for tradereq_filed in traderequest_dict:
-                    print("       traderequest: {}={}".format(tradereq_filed,traderequest_dict[tradereq_filed]))
-                    
+            raise Exception("order_send failed, retcode={}".format(result.retcode))
+        raise Exception("order_send failed, retcode={}".format(result.retcode))     
     
     print("2. order_send done, ", result)
     print("   opened position with POSITION_TICKET={}".format(result.order))
@@ -149,26 +129,23 @@ def buy_order(prediction,symbol):
 
 def sell_order(prediction,symbol):
     #close buy position
-    close_position(mt5.ORDER_TYPE_BUY)
-    global order_send_count
+    #close_position(mt5.ORDER_TYPE_BUY)
+
+    global order_send_count,tp
     price = mt5.symbol_info_tick(symbol).bid
     if not settings.Trade_with_signals:
         tp=mt5.symbol_info_tick(symbol).bid-(mt5.symbol_info_tick(symbol).bid-prediction)
         sl =mt5.symbol_info_tick(symbol).bid+(mt5.symbol_info_tick(symbol).bid-prediction)
     else:
-        tp=0.0
+        tp=mt5.symbol_info_tick(symbol).bid-point*40
         sl = settings.sl
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
-        print(symbol, "not found, can not call order_check()")
-            
-    # if the symbol is unavailable in MarketWatch, add it
+        raise Exception("symbol_info({}}) failed, exit",symbol)
+        return
     if not symbol_info.visible:
-        print(symbol, "is not visible, trying to switch on")
-        if not mt5.symbol_select(symbol,True):
-            print("symbol_select({}}) failed, exit",symbol)
-                
-        
+        raise Exception("symbol_info({}}) failed, exit",symbol)
+        return
     # define request parameters
     request["type"] = mt5.ORDER_TYPE_SELL
     request["price"] = mt5.symbol_info_tick(symbol).bid
@@ -187,19 +164,69 @@ def sell_order(prediction,symbol):
             buy_order(prediction, symbol)
         else:
             order_send_count = 0
-            print("Order Resend Failed",mt5.last_error())
-        print("2. order_send failed, retcode={}".format(result))
-        # request the result as a dictionary and display it element by element
-        result_dict=result._asdict()
-        for field in result_dict.keys():
-            print("   {}={}".format(field,result_dict[field]))
-            # if this is a trading request structure, display it element by element as well
-            if field=="request":
-                traderequest_dict=result_dict[field]._asdict()
-                for tradereq_filed in traderequest_dict:
-                    print("       traderequest: {}={}".format(tradereq_filed,traderequest_dict[tradereq_filed]))
-                        
+            raise Exception("order_send failed, retcode={}".format(result.retcode))
+        raise Exception("order_send failed, retcode={}".format(result.retcode))
+       
     else:
         print("2. order_send done, ", result)
         print("3. opened position with POSITION_TICKET={}".format(result.order))
     
+
+def change_tp_sl():
+    time.sleep(5)
+    positions = mt5.positions_get(symbol=symbol)
+    tick = mt5.symbol_info_tick(symbol)
+    if positions:
+        for position in positions:
+            #request to modify the order
+            request = {
+                "action": mt5.TRADE_ACTION_SLTP,
+                "position": position.ticket,
+                "symbol": position.symbol,
+            }
+            if position.type == mt5.ORDER_TYPE_BUY and position.profit > 0:
+                if position.tl ==0.0:
+                    request["sl"] = position.price_open
+                    request["tp"] = mt5.symbol_info_tick(
+                        symbol).bid+(position.profit)*point
+                elif(position.profit*point) > (position.tp-position.price_open)*0.5:
+                    request["sl"] = position.sl + \
+                        ((position.profit)*0.5)*point
+                    request["tp"] = position.tp + \
+                        (position.price_open-position.tp)*0.5
+                else:
+                    print("profit is less than 0.5% of tp for buy")
+                result = mt5.order_send(request)
+                # check the execution result
+                print("1. order_send(): modify {} order".format(position.type))
+                if result.retcode != mt5.TRADE_RETCODE_DONE and result.retcode != 10025:
+                    raise Exception(
+                        "order_send failed, retcode={}".format(result.retcode))
+                print("2. order_send done, ", result)
+            elif position.type == mt5.ORDER_TYPE_SELL and position.profit > 0:
+                if position.tl ==0.0:
+                    request["sl"] = position.price_open
+                    request["tp"] = mt5.symbol_info_tick(
+                        symbol).ask-(position.profit)*point
+                elif(position.profit*point) > (position.tp-position.price_open)*0.5:
+                    request["sl"] = position.sl - \
+                        ((position.profit)*0.5)*point
+                    request["tp"] = position.tp - \
+                        (position.price_open-position.tp)*0.5
+                else:
+                    print("profit is less than 0.5% of tp for sell")
+                result = mt5.order_send(request)
+                # check the execution result
+                print("1. order_send(): modify {} order".format(position.type))
+                if result.retcode != mt5.TRADE_RETCODE_DONE and result.retcode != 10025:
+                    raise Exception(
+                        "order_send failed, retcode={}".format(result.retcode))
+                print("2. order_send done, ", result)
+
+        
+            
+    else:
+        print("no positions found")
+
+        return
+                    
