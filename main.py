@@ -7,29 +7,16 @@ import MetaTrader5 as mt5
 from models.model import model
 from mt5_actions.authorize import login
 from mt5_actions.rates import get_curr_rates
-from mt5_actions.order import buy_order, sell_order, check_order
+from mt5_actions.order import buy_order, sell_order, check_order,change_tp_sl
 from mt5_global.settings import symbol, timeframe,time_series,Debug,timezone,Trade_with_signals
 
 from models.model import scaler
-import schedule
 import talib as ta
 from technical_analysis.signal import Signal
 
-saved_model = None
-def trade_time():
-    print("executing")
+saved_model = None 
 
-    while True:
-        if datetime.datetime.now().weekday in [1,2,3,4,5] and datetime.datetime.now().hour in range(8,17):
-            trade()
-        else:
-            #sleep for 1 hour
-            print('sleeping for one hour')
-            time.sleep(3600)
-            continue
-        
-
-def trade():
+def trade_with_model():
     if not login():
         print('login failed')
         return
@@ -44,6 +31,7 @@ def trade():
             curr_rate_frame_last = curr_rate_frame.tail(1)
             previous_rates_frame = pd.DataFrame(rates)
             previous_rates_frame_last = previous_rates_frame.tail(1)
+            #check for a new candle to be formed
             if int(curr_rate_frame_last['time'])== int(previous_rates_frame_last['time']):
                 time.sleep(2)
                 continue
@@ -121,14 +109,13 @@ def trade_with_signal():
     while True:
         try:
             #check for spread if spread is greater than 5 pips do not trade
-            
+            change_tp_sl()
             curr_rate =get_curr_rates(symbol,timeframe, time_series)
             curr_rate_frame = pd.DataFrame(curr_rate)
             curr_rate_frame_last = curr_rate_frame.tail(1)
             previous_rates_frame = pd.DataFrame(rates)
             previous_rates_frame_last = previous_rates_frame.tail(1)
             if int(curr_rate_frame_last['time'])== int(previous_rates_frame_last['time']):
-                time.sleep(2)
                 continue
             if mt5.symbol_info_tick(symbol).ask - mt5.symbol_info_tick(symbol).bid < 20:
                 signal = Signal()
@@ -168,7 +155,7 @@ if __name__ == "__main__":
     if Trade_with_signals:
         trade_with_signal()
     else:
-        trade()
+        trade_with_model()
    
        
 

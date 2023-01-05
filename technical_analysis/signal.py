@@ -14,6 +14,7 @@ from .patterns.counter_attack import CounterAttack
 from .patterns.separating_line import SeparatingLine
 from .patterns.rising_falling_three_methods import RisingFallingThreeMethods
 from .patterns.tasukigap import TasukiGap
+from technical_analysis.indicators.indicator_signal import IndicatorSignal
 from mt5_actions import rates
 from mt5_global.settings import timeframe,symbol
 import numpy as np
@@ -35,10 +36,11 @@ class Signal(BearishBullishEnglufing,
         CounterAttack,
         SeparatingLine,
         RisingFallingThreeMethods,
-        TasukiGap):
+        TasukiGap,
+        IndicatorSignal):
     def __init__(self):
-        self.signal =[]
-
+        self.indicator_signal = []
+        self.signal = []
     def get_signal(self):
         self.signal.append(self.check_bullish_bearish_engulfing(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_morning_evening_star(rates.get_curr_rates(symbol,timeframe,14)))
@@ -48,7 +50,7 @@ class Signal(BearishBullishEnglufing,
         self.signal.append(self.check_shooting_start_inverted_hammer(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_harami(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_belt_hold(rates.get_curr_rates(symbol,timeframe,14)))
-        #self.signal.append(self.check_doji(rates.get_curr_rates(symbol,timeframe,14)))
+        self.signal.append(self.check_doji(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_three_black_crows_three_advancing_solders(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_unique_three_river(rates.get_curr_rates(symbol,timeframe,2600)))
         self.signal.append(self.check_upside_gap_2_crows(rates.get_curr_rates(symbol,timeframe,14)))
@@ -56,6 +58,7 @@ class Signal(BearishBullishEnglufing,
         self.signal.append(self.check_separating_line(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_rising_falling_three_methods(rates.get_curr_rates(symbol,timeframe,14)))
         self.signal.append(self.check_tasuki_gap(rates.get_curr_rates(symbol,timeframe,14)))
+        self.get_indicator_signal()
 
 
    
@@ -73,9 +76,9 @@ class Signal(BearishBullishEnglufing,
                 sell += 1
             else:
                 pass
-        if buy > sell:
+        if buy > sell and self.check_indicator_signal() == 'buy':
             signal_type = 'buy'
-        elif sell > buy:
+        elif sell > buy and self.check_indicator_signal() == 'sell':
             signal_type = 'sell'
         else:
             signal_type = 'hold'
