@@ -7,13 +7,18 @@ import pathlib
 from technical_analysis.indicators.moving_average import MovingAverage
 from technical_analysis.indicators.relative_strength_index import RelativeStrengthIndex
 from technical_analysis.indicators.e_moving_average14_e_moving_average28 import EMA14_EMA28
+from technical_analysis.osillators.stochastic_osillator import StochasticOscillator
+from technical_analysis.osillators.macd import MACD
+
 
 
 class IndicatorSignal(
     MovingAverage,
     RelativeStrengthIndex,
-    EMA14_EMA28
-):
+    EMA14_EMA28,
+    StochasticOscillator,
+    MACD
+    ):
     def __init__(self):
         super().__init__()
         self.indicator_signal = []
@@ -21,6 +26,8 @@ class IndicatorSignal(
         self.indicator_signal.append(self.check_ma(rates.get_curr_rates(symbol,timeframe,14)))
         self.indicator_signal.append(self.check_rsi(rates.get_curr_rates(symbol,timeframe,14)))
         self.indicator_signal.append(self.check_ema())
+        self.indicator_signal.append(self.check_stoch(rates.get_curr_rates(symbol, timeframe, 14)))
+        self.indicator_signal.append(self.check_macd(rates.get_curr_rates(symbol, timeframe, 30)))
         #log the indicator signal in indicator.log file
         logging.basicConfig(
             filename='C:\mt5_bots\mt5_EA_v3\logs_dir\indicator.log', level=logging.INFO)

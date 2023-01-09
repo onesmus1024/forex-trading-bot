@@ -10,7 +10,7 @@ class EMA14_EMA28:
         self.ema28 = 0
     def check_ema(self):
         df14 = pd.DataFrame(mt5.copy_rates_from_pos(settings.symbol, settings.timeframe, 1, 14))
-        df28 = pd.DataFrame(mt5.copy_rates_from_pos(settings.symbol, settings.timeframe, 1, 28))
+        df28 = pd.DataFrame(mt5.copy_rates_from_pos(settings.symbol, settings.timeframe, 1, 20))
         self.ema14 = ta.EMA(df14['close'],timeperiod=14)
         self.ema28 = ta.EMA(df28['close'],timeperiod=20)
         self.ema14 = list(self.ema14)

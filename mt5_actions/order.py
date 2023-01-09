@@ -84,10 +84,9 @@ def buy_order(prediction,symbol):
     global order_send_count,tp
     price = mt5.symbol_info_tick(symbol).ask
     if not settings.Trade_with_signals:
-        tp=mt5.symbol_info_tick(symbol).ask+(prediction-mt5.symbol_info_tick(symbol).ask)
         sl =mt5.symbol_info_tick(symbol).ask-(prediction-mt5.symbol_info_tick(symbol).ask)
     else:
-        tp=mt5.symbol_info_tick(symbol).ask+point*40
+       
         sl = settings.sl
     symbol_info = mt5.symbol_info(symbol)
         
@@ -105,7 +104,7 @@ def buy_order(prediction,symbol):
     request["type"] = mt5.ORDER_TYPE_BUY
     request["price"] = mt5.symbol_info_tick(symbol).ask
     request["sl"] = sl
-    request["tp"] = tp
+ 
 
     # send a trading request
     result = mt5.order_send(request)
@@ -134,10 +133,9 @@ def sell_order(prediction,symbol):
     global order_send_count,tp
     price = mt5.symbol_info_tick(symbol).bid
     if not settings.Trade_with_signals:
-        tp=mt5.symbol_info_tick(symbol).bid-(mt5.symbol_info_tick(symbol).bid-prediction)
         sl =mt5.symbol_info_tick(symbol).bid+(mt5.symbol_info_tick(symbol).bid-prediction)
     else:
-        tp=mt5.symbol_info_tick(symbol).bid-point*40
+        
         sl = settings.sl
     symbol_info = mt5.symbol_info(symbol)
     if symbol_info is None:
@@ -150,7 +148,7 @@ def sell_order(prediction,symbol):
     request["type"] = mt5.ORDER_TYPE_SELL
     request["price"] = mt5.symbol_info_tick(symbol).bid
     request["sl"] = sl
-    request["tp"] = tp
+    
 
     # send a trading request
     result = mt5.order_send(request)
@@ -173,60 +171,43 @@ def sell_order(prediction,symbol):
     
 
 def change_tp_sl():
-    time.sleep(5)
+    time.sleep(1)
     positions = mt5.positions_get(symbol=symbol)
-    tick = mt5.symbol_info_tick(symbol)
     if positions:
+        levels = 50  # 10 pips
         for position in positions:
-            #request to modify the order
             request = {
                 "action": mt5.TRADE_ACTION_SLTP,
                 "position": position.ticket,
                 "symbol": position.symbol,
             }
-            if position.type == mt5.ORDER_TYPE_BUY and position.profit > 0:
-                if position.tl ==0.0:
-                    request["sl"] = position.price_open
-                    request["tp"] = mt5.symbol_info_tick(
-                        symbol).bid+(position.profit)*point
-                elif(position.profit*point) > (position.tp-position.price_open)*0.5:
-                    request["sl"] = position.sl + \
-                        ((position.profit)*0.5)*point
-                    request["tp"] = position.tp + \
-                        (position.price_open-position.tp)*0.5
-                else:
-                    print("profit is less than 0.5% of tp for buy")
-                result = mt5.order_send(request)
-                # check the execution result
-                print("1. order_send(): modify {} order".format(position.type))
-                if result.retcode != mt5.TRADE_RETCODE_DONE and result.retcode != 10025:
-                    raise Exception(
-                        "order_send failed, retcode={}".format(result.retcode))
-                print("2. order_send done, ", result)
-            elif position.type == mt5.ORDER_TYPE_SELL and position.profit > 0:
-                if position.tl ==0.0:
-                    request["sl"] = position.price_open
-                    request["tp"] = mt5.symbol_info_tick(
-                        symbol).ask-(position.profit)*point
-                elif(position.profit*point) > (position.tp-position.price_open)*0.5:
-                    request["sl"] = position.sl - \
-                        ((position.profit)*0.5)*point
-                    request["tp"] = position.tp - \
-                        (position.price_open-position.tp)*0.5
-                else:
-                    print("profit is less than 0.5% of tp for sell")
-                result = mt5.order_send(request)
-                # check the execution result
-                print("1. order_send(): modify {} order".format(position.type))
-                if result.retcode != mt5.TRADE_RETCODE_DONE and result.retcode != 10025:
-                    raise Exception(
-                        "order_send failed, retcode={}".format(result.retcode))
-                print("2. order_send done, ", result)
+            if position.profit > 0:
+                if position.type == mt5.ORDER_TYPE_BUY:
+                    if not position.sl:
+                        if (mt5.symbol_info_tick(symbol).ask-position.price_open) >= levels*point:
+                            request['sl'] = position.price_open
+                            mt5.order_send(request)
+                    else:
+                        if position.sl<position.price_open:
+                            if (mt5.symbol_info_tick(symbol).ask-position.price_open) >= levels*point:
+                                request['sl'] = position.price_open+(levels*point)*0.75
+                                mt5.order_send(request)
+                        elif (mt5.symbol_info_tick(symbol).ask-position.sl) >= levels*point:
+                            request['sl'] = position.sl+(levels*point)*0.75
+                            mt5.order_send(request)
 
-        
-            
-    else:
-        print("no positions found")
+                else:
+                    if not position.sl:
+                        if (position.price_open-mt5.symbol_info_tick(symbol).bid) >= levels*point:
+                            request['sl'] = position.price_open
+                            mt5.order_send(request)
+                    else:
+                        if position.sl>position.price_open:
+                            if (position.price_open-mt5.symbol_info_tick(symbol).bid) >= levels*point:
+                                request['sl'] = position.price_open-(levels*point)*0.75
+                                mt5.order_send(request)
+                        elif (position.sl-mt5.symbol_info_tick(symbol).bid) >= levels*point:
+                            request['sl'] = position.sl-(levels*point)*0.75
+                            mt5.order_send(request)
 
-        return
-                    
+                        
